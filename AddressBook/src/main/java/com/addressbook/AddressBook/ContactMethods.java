@@ -1,16 +1,19 @@
 package com.addressbook.AddressBook;
 
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
+import com.google.gson.Gson;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
 import com.opencsv.bean.StatefulBeanToCsv;
@@ -38,13 +41,15 @@ public class ContactMethods {
 				System.out.println("4. Display the Address Book");
 				System.out.println("5. Write Records into CSV File");
 				System.out.println("6. Read Records from CSV File");
+				System.out.println("7. Write Records into JSON File");
+				System.out.println("8. Read Records from JSON File");
 				System.out.println("0. Exit");
 				System.out.print("\nEnter your choice : ");
 				choice = sc.nextInt();
 				
-				if (!(choice >=1 && choice <= 6))
+				if (!(choice >=1 && choice <= 8))
 					System.out.println("\nInvalid choice!\nPlease try again.\n");	
-			}while (!(choice >=1 && choice <= 6));
+			}while (!(choice >=1 && choice <= 8));
 			
 			switch (choice)
 			{
@@ -69,7 +74,15 @@ public class ContactMethods {
 					break;
 					
 				case 6 :
-					readFromCSV(addressBook, contactList);
+					readFromCSV(addressBook);
+					break;
+					
+				case 7 :
+					writeIntoJson(addressBook, contactList);
+					break;
+					
+				case 8 :
+					readFromJson(addressBook);
 					break;
 
 					
@@ -80,7 +93,36 @@ public class ContactMethods {
 		}while(choice != 0);	
 	}
 	
-	private void readFromCSV(String addressBook, ArrayList<Contact> contactList) throws IOException, CsvException {
+	private void readFromJson(String addressBook) throws IOException {
+		String path = "./".concat(addressBook).concat("-address-book.json");
+
+		try (Reader reader = Files.newBufferedReader(Paths.get(path))			       )
+		{
+			Gson gson = new Gson();
+			ArrayList<Contact> entries = new ArrayList<>(Arrays.asList(gson.fromJson(reader, Contact[].class)));
+			for (Contact contact : entries) {
+				 	System.out.println("First Name : " + contact.getFirstName());
+	                System.out.println("Last Name : " + contact.getLastName());
+	                System.out.println("City : " + contact.getAddress().getCity());
+	                System.out.println("State : " + contact.getAddress().getState());
+	                System.out.println("Zipcode : " + contact.getAddress().getZip());
+	                System.out.println("Phone Number : " + contact.getPhoneNumber());
+	                System.out.println("Email ID : " + contact.getPhoneNumber());
+	                System.out.println("================================\n");
+			}
+		}
+	}
+
+	private void writeIntoJson(String addressBook, ArrayList<Contact> contactList) throws IOException {
+		String path = "./".concat(addressBook).concat("-address-book.json");
+		Gson gson = new Gson();
+		String writeToFile = gson.toJson(contactList);
+		FileWriter writer = new FileWriter(String.valueOf(Paths.get(path)));
+		writer.write(writeToFile);
+		writer.close();	
+	}
+
+	private void readFromCSV(String addressBook) throws IOException, CsvException {
 		String path = "./".concat(addressBook).concat("-address-book.csv");
 		
 		try (
@@ -91,11 +133,9 @@ public class ContactMethods {
 	            for (String[] record : records) {
 	                System.out.println("First Name : " + record[0]);
 	                System.out.println("Last Name : " + record[1]);
-	                System.out.println("City : " + record[2]);
-	                System.out.println("State : " + record[3]);
+	                System.out.println("Address : " + record[2]);
+	                System.out.println("Phone Number : " + record[3]);
 	                System.out.println("Email ID : " + record[4]);
-	                System.out.println("Phone Number : " + record[5]);
-	                System.out.println("Zip Code : " + record[7]);
 	                System.out.println("---------------------------");
 	            }
 	        }
