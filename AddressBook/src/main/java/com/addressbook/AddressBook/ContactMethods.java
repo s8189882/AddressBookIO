@@ -1,9 +1,23 @@
 package com.addressbook.AddressBook;
 
+import java.io.IOException;
+import java.io.Reader;
+import java.io.Writer;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
+
+import com.opencsv.CSVReader;
+import com.opencsv.CSVReaderBuilder;
+import com.opencsv.bean.StatefulBeanToCsv;
+import com.opencsv.bean.StatefulBeanToCsvBuilder;
+import com.opencsv.exceptions.CsvDataTypeMismatchException;
+import com.opencsv.exceptions.CsvException;
+import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
 
 
 public class ContactMethods {
@@ -12,7 +26,7 @@ public class ContactMethods {
 	static Map<String, String> stateDictionary = new HashMap<>();
 
 	
-	public void manageAddressBook(String addressBook, ArrayList<Contact> contactList) {
+	public void manageAddressBook(String addressBook, ArrayList<Contact> contactList) throws IOException, CsvException {
 		int  choice = 0;
 		
 		do {
@@ -22,13 +36,15 @@ public class ContactMethods {
 				System.out.println("2. Edit an Existing contact");
 				System.out.println("3. Delete an Existing contact");
 				System.out.println("4. Display the Address Book");
+				System.out.println("5. Write Records into CSV File");
+				System.out.println("6. Read Records from CSV File");
 				System.out.println("0. Exit");
 				System.out.print("\nEnter your choice : ");
 				choice = sc.nextInt();
 				
-				if (!(choice >=1 && choice <= 4))
+				if (!(choice >=1 && choice <= 6))
 					System.out.println("\nInvalid choice!\nPlease try again.\n");	
-			}while (!(choice >=1 && choice <= 4));
+			}while (!(choice >=1 && choice <= 6));
 			
 			switch (choice)
 			{
@@ -48,11 +64,54 @@ public class ContactMethods {
 					displayAddressBook(addressBook, contactList);
 					break;
 					
+				case 5 :
+					writeIntoCSV(addressBook, contactList);
+					break;
+					
+				case 6 :
+					readFromCSV(addressBook, contactList);
+					break;
+
+					
 				case 0 :
 					System.out.println("\nExiting Address Book '" + addressBook + "'");
 					break;
 			}
 		}while(choice != 0);	
+	}
+	
+	private void readFromCSV(String addressBook, ArrayList<Contact> contactList) throws IOException, CsvException {
+		String path = "./".concat(addressBook).concat("-address-book.csv");
+		
+		try (
+	            Reader reader = Files.newBufferedReader(Paths.get(path));
+	            CSVReader csvReader = new CSVReaderBuilder(reader).withSkipLines(1).build();
+	        ) {
+	            List<String[]> records = csvReader.readAll();
+	            for (String[] record : records) {
+	                System.out.println("First Name : " + record[0]);
+	                System.out.println("Last Name : " + record[1]);
+	                System.out.println("City : " + record[2]);
+	                System.out.println("State : " + record[3]);
+	                System.out.println("Email ID : " + record[4]);
+	                System.out.println("Phone Number : " + record[5]);
+	                System.out.println("Zip Code : " + record[7]);
+	                System.out.println("---------------------------");
+	            }
+	        }
+	}
+
+	private void writeIntoCSV(String addressBook, ArrayList<Contact> contactList) throws IOException, CsvDataTypeMismatchException, CsvRequiredFieldEmptyException {
+		String path = "./".concat(addressBook).concat("-address-book.csv");
+		
+		try (Writer writer = Files.newBufferedWriter(Paths.get(path)))
+		{
+			StatefulBeanToCsvBuilder<Contact> csvBuilder = new StatefulBeanToCsvBuilder<>(writer);
+			StatefulBeanToCsv<Contact> csvWriter = csvBuilder.build();
+			csvWriter.write(contactList);
+			System.out.println("\nWriting Address Book data into CSV file - COMPLETE!");
+			writer.close();
+		}
 	}
 
 	public void registerInCityDictionary(Contact contact) {
