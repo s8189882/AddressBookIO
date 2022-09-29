@@ -12,13 +12,15 @@ import java.util.Map.Entry;
 import java.util.Scanner;
 import java.util.stream.Collectors;
 
+import com.opencsv.exceptions.CsvException;
+
 public class AddressBookMethods {
 
 	static Scanner sc = new Scanner(System.in);
 	HashMap<String, ArrayList<Contact>> addressBookMap = new HashMap<>();
 	ContactMethods operations = new ContactMethods();
 
-	public void manageAddressBookList() throws IOException {
+	public void manageAddressBookList() throws IOException, CsvException {
 		int  choice = 0;
 		
 		do {
@@ -333,7 +335,7 @@ public class AddressBookMethods {
 			System.out.println("\nNo Persons information found in '" + searchState + "' city.");
 	}
 	
-	public void addAddressBook() {
+	public void addAddressBook() throws IOException, CsvException {
 		String addressbookName = ""; 
 		
 		System.out.println("\nCreating a new Address Book...");
@@ -360,7 +362,7 @@ public class AddressBookMethods {
 		return name;
 	}
 	
-	public void editAddressBook() {
+	public void editAddressBook() throws IOException, CsvException {
 		String name = "";
 		ArrayList<Contact> editList = getAddressBookToModify(); 
 		
